@@ -21,11 +21,13 @@ else:
 new_AOC_path = os.path.join(file_path, "AOC" + year)
 
 if os.path.exists(new_AOC_path):
-	print("Already exists")
-	sys.exit()
+	paths = glob.glob(new_AOC_path + "**/**", recursive=False)
+	if len(paths) != 0:
+		print("Already exists")
+		sys.exit()
 
 
-shutil.copytree(AOC_path, new_AOC_path)
+shutil.copytree(AOC_path, new_AOC_path, dirs_exist_ok=True)
 
 for filename in glob.iglob(new_AOC_path + "**/**", recursive=True):
 	content = ""
