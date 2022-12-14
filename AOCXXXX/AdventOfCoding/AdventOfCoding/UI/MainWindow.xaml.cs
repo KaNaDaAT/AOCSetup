@@ -203,8 +203,9 @@ namespace AdventOfCoding {
 				suffix = day[day.Length - 1].ToString();
 				day = day[..(day.Length - 1)];
 			}
-			int day_num = int.Parse(day[..2]);
-			return day_num.ToString("2D") + suffix;
+			int day_num = int.Parse(day);
+			day = day_num.ToString("D2");
+			return day + suffix;
 		}
 	}
 }
