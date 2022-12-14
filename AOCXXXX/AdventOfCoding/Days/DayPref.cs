@@ -13,7 +13,7 @@ namespace AdventOfCoding.Days {
 				
 			}
 
-			this.Result = 0;
+			this.Result = null;
 
 			/* Output Region */
 			if (!IsDebugMode)
