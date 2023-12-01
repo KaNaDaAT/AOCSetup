@@ -38,7 +38,7 @@ for filename in glob.iglob(new_AOC_path + "**/**", recursive=True):
 			content = content.replace("XXXX", year)
 			content = content.replace("YEAR = 0000", "YEAR = " + year)
 			with open(filename, 'w', encoding="utf8") as fp:
-				 fp.write(content)
+				fp.write(content)
 	except:
 		pass
 	if "XXXX" in filename:
