@@ -5,6 +5,7 @@ import tkinter as tk
 from tkinter import simpledialog
 import glob
 import subprocess
+import datetime
 
 file_path = os.path.dirname(__file__)
 AOC_path = os.path.join(file_path, "AOCXXXX")
@@ -14,7 +15,7 @@ ROOT = tk.Tk()
 ROOT.withdraw()
 if len(sys.argv) < 2:
     while not year.isnumeric():
-        year = simpledialog.askstring(title="Year", prompt="Which year?")
+        year = simpledialog.askstring(title="Year", prompt="Which year?", initialvalue=datetime.date.today().year)
 else:
     year = str(int(sys.argv[1]))
 
@@ -49,8 +50,9 @@ subprocess.run(["python", createDays_path])
 createData_path = os.path.join(new_AOC_path, "AdventOfCoding", "data.py")
 subprocess.run(["python", createData_path])
 
+os.chdir(new_AOC_path)
 git_commands = [
-    "git init", "git add .", f"git commit -m 'AOC {year} Initial commit'"
+    "git init", "git add .", f"git commit -m \"AOC {year} Initial commit\""
 ]
 for command in git_commands:
     subprocess.run(command, shell=True)
