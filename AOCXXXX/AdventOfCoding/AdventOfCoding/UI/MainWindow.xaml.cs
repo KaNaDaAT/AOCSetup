@@ -39,7 +39,7 @@ namespace AdventOfCoding {
 			UIConsole.Instance.commands.Add("start", commandStart);
 
 			UndefinedCommand commandSubmit = new UndefinedCommand();
-			commandStart.Define("submit", new Action<string>(CommandSubmitDay)); // TODO Besser im Define mitgeben wie viele parameter. x für unendlich
+			commandSubmit.Define("submit", new Action<string>(CommandSubmitDay)); // TODO Besser im Define mitgeben wie viele parameter. x für unendlich
 			UIConsole.Instance.commands.Add("submit", commandSubmit);
 		}
 
@@ -101,7 +101,15 @@ namespace AdventOfCoding {
 				bool isCtrl = Keyboard.IsKeyDown(Key.LeftCtrl) || Keyboard.IsKeyDown(Key.RightCtrl);
 				bool isShift = Keyboard.IsKeyDown(Key.LeftShift) || Keyboard.IsKeyDown(Key.RightShift);
 				bool isAlt = Keyboard.IsKeyDown(Key.LeftAlt) || Keyboard.IsKeyDown(Key.RightAlt);
-				Thread thread = new Thread(() => RunAOC(prog, isCtrl, isShift, isAlt));
+				Thread thread = new Thread(() => {
+					RunAOC(prog, isCtrl, isShift, isAlt);
+					Dispatcher.Invoke(() => {
+						foreach (var aocbutton in AOCButtons) {
+							aocbutton.button.IsEnabled = aocbutton.enabled;
+						}
+						UIConsole.SwitchToCommandMode();
+					});
+				});
 				thread.Start();
 			}
 		}
@@ -131,7 +139,7 @@ namespace AdventOfCoding {
 					try {
 						resultData =
 							aufgabe.MainMethod(
-								new Reader($"{Environment.CurrentDirectory}/Days/Day{day[..2]}/ Day{day}.data"),
+								new Reader($"{Environment.CurrentDirectory}/Days/Day{day[..2]}/Day{day}.data"),
 								IsDebug
 							);
 					} catch (Exception exc) {
@@ -152,24 +160,35 @@ namespace AdventOfCoding {
 			day = ParseDay(day);
 			object result = null;
 			if (!this.results.TryGetValue(day, out result)) {
-				UIConsole.WriteLine($"Result unknown for {day}!");
+				UIConsole.WriteLine($"Missing Result Day{day}");
 				return;
 			}
-			ProcessStartInfo start = new ProcessStartInfo();
-			start.FileName = "python.exe";
-			start.Arguments = string.Format(
-					"{0} {1} \"{3}\"",
-					day[..2],
-					day[day.Length - 1].ToString().ToLower(),
-					result.ToString()
-				);
-			start.UseShellExecute = false;
-			start.RedirectStandardOutput = true;
-			using (Process process = Process.Start(start)) {
-				using (StreamReader reader = process.StandardOutput) {
-					string output = reader.ReadToEnd();
-					UIConsole.WriteLine(result);
+			try {
+				ProcessStartInfo start = new ProcessStartInfo();
+				start.FileName = $"python.exe";
+				start.Arguments = string.Format(
+						"{0} {1} {2} \"{3}\"",
+						$"{AppDomain.CurrentDomain.BaseDirectory}submit.py",
+						day[..2],
+						day[day.Length - 1].ToString().ToLower(),
+						result.ToString()
+					);
+				start.UseShellExecute = false;
+				start.CreateNoWindow = true;
+				start.RedirectStandardOutput = true;
+				start.RedirectStandardError = true;
+				using (Process process = Process.Start(start)) {
+					using (StreamReader reader = process.StandardOutput) {
+						string stderr = process.StandardError.ReadToEnd();
+						string output = reader.ReadToEnd();
+						if(!String.IsNullOrEmpty(stderr))
+							UIConsole.WriteLine("Errors:\n" + stderr);
+						if (!String.IsNullOrEmpty(output))
+							UIConsole.WriteLine(output);
+					}
 				}
+			} catch(Exception e) {
+				UIConsole.WriteLine(e.Message);
 			}
 		}
 
@@ -179,12 +198,6 @@ namespace AdventOfCoding {
 			if (isStrg) {
 				UIConsole.WriteLine($"data Day{day}");
 				CommandOpenFile(day);
-				this.Dispatcher.Invoke(() => {
-					foreach (var aocbutton in AOCButtons) {
-						aocbutton.button.IsEnabled = false;
-					}
-					UIConsole.SwitchToCommandMode();
-				});
 			} else if (isAlt) {
 				UIConsole.WriteLine($"submit Day{day}");
 				CommandSubmitDay(day);
