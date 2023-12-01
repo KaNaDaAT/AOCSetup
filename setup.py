@@ -4,6 +4,7 @@ import sys
 import tkinter as tk
 from tkinter import simpledialog
 import glob
+import subprocess
 
 
 file_path = os.path.dirname(__file__)
@@ -45,6 +46,6 @@ for filename in glob.iglob(new_AOC_path + "**/**", recursive=True):
 		shutil.move(filename, filename.replace("XXXX", year))
 
 createDays_path = os.path.join(new_AOC_path, "AdventOfCoding", "Days", "createDays.py")
-os.system(createDays_path)
+subprocess.run(["python", createDays_path])
 createData_path = os.path.join(new_AOC_path, "AdventOfCoding", "data.py")
-os.system(createData_path)
+subprocess.run(["python", createData_path])
