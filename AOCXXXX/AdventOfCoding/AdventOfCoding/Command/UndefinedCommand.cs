@@ -100,7 +100,18 @@ namespace AdventOfCoding.Function.Command {
 						}
 						else
 						{
-							argsOut.Add(Convert.ChangeType(argsIn[j + 1], _commandArgTypes[index - firstelements.Count]));
+							var expectedType = _commandArgTypes[index - firstelements.Count];
+							if (j + 2 >= argsIn.Length || argsIn[j + 1].StartsWith("-"))
+							{
+								if (expectedType == typeof(bool))
+									argsOut.Add(true);
+								else
+									throw new Exception($"Command Flag '{argsIn[j]}' expected a value of type '{expectedType}'");
+							}
+							else
+							{
+								argsOut.Add(Convert.ChangeType(argsIn[j + 1], _commandArgTypes[index - firstelements.Count]));
+							}
 						}
 						break;
 					}
