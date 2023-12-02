@@ -22,7 +22,8 @@ namespace AdventOfCoding {
 		private readonly List<(bool enabled, Button button)> AOCButtons = new List<(bool enabled, Button button)>();
 		private readonly Dictionary<string, object> results = new Dictionary<string, object>();
 
-		public MainWindow() {
+		public MainWindow()
+		{
 			InitializeComponent();
 			UIConsole.WriteLine($"AdventOfCoding{App.YEAR} Started...");
 			UIConsole.SwitchToCommandMode();
@@ -43,12 +44,15 @@ namespace AdventOfCoding {
 			UIConsole.Instance.commands.Add("submit", commandSubmit);
 		}
 
-		private void CreateAdventButtons() {
+		private void CreateAdventButtons()
+		{
 			int colMod = 0;
 			int rowMod = 0;
-			for (int row = 0; row < 5; row++) {
+			for (int row = 0; row < 5; row++)
+			{
 				colMod = 0;
-				for (int column = 0; column < 10; column++) {
+				for (int column = 0; column < 10; column++)
+				{
 					if (column != 0 && column % 2 == 0)
 						colMod++;
 					int day = row * 5 + column / 2 + 1;
@@ -62,23 +66,29 @@ namespace AdventOfCoding {
 					bool happened = DateTimeOffset.Now >= new DateTimeOffset(App.YEAR, 12, day, 0, 0, 0, timezone.GetUtcOffset(DateTimeOffset.Now));
 					button.Background.Opacity = happened ? 0.75 : 0.3;
 					button.BorderThickness = new Thickness(0.5);
-					button.BorderBrush = new SolidColorBrush(Color.FromArgb((byte) (button.Background.Opacity * 255), 23, 179, 39));
-					button.Foreground = new SolidColorBrush(Color.FromArgb((byte) (happened ? 255 : button.Background.Opacity * 255), 0, 0, 0));
+					button.BorderBrush = new SolidColorBrush(Color.FromArgb((byte)(button.Background.Opacity * 255), 23, 179, 39));
+					button.Foreground = new SolidColorBrush(Color.FromArgb((byte)(happened ? 255 : button.Background.Opacity * 255), 0, 0, 0));
 					button.FontWeight = FontWeights.Bold;
 					button.FontSize = 20;
 					button.Width = 50;
 					button.Height = 50;
-					if (happened) {
+					if (happened)
+					{
 						this.AOCButtons.Add((true, button));
-					} else {
+					}
+					else
+					{
 						this.AOCButtons.Add((false, button));
 						button.IsEnabled = false;
 					}
 
 
-					if (column % 2 == 0) {
+					if (column % 2 == 0)
+					{
 						button.Content = day.ToString("D2") + "A";
-					} else {
+					}
+					else
+					{
 						button.Content = day.ToString("D2") + "B";
 					}
 					Grid.SetColumn(button, column + colMod);
@@ -90,11 +100,14 @@ namespace AdventOfCoding {
 		}
 
 
-		public void OnAdventButtonClick(object sender, RoutedEventArgs e) {
+		public void OnAdventButtonClick(object sender, RoutedEventArgs e)
+		{
 			Button button = sender as Button;
-			if (button != null) {
+			if (button != null)
+			{
 				UIConsole.SwitchToExecuteMode();
-				foreach (var aocbutton in AOCButtons) {
+				foreach (var aocbutton in AOCButtons)
+				{
 					aocbutton.button.IsEnabled = false;
 				}
 				string prog = button.Content.ToString();
@@ -104,7 +117,8 @@ namespace AdventOfCoding {
 				Thread thread = new Thread(() => {
 					RunAOC(prog, isCtrl, isShift, isAlt);
 					Dispatcher.Invoke(() => {
-						foreach (var aocbutton in AOCButtons) {
+						foreach (var aocbutton in AOCButtons)
+						{
 							aocbutton.button.IsEnabled = aocbutton.enabled;
 						}
 						UIConsole.SwitchToCommandMode();
@@ -114,56 +128,81 @@ namespace AdventOfCoding {
 			}
 		}
 
-		private void CommandOpenFile(string day) {
-			day = ParseDay(day);
-			Process.Start("notepad.exe", $"{Environment.CurrentDirectory}/Days/Day{day[..2]}/Day{day}.data");
+		private void CommandOpenFile(string day)
+		{
+			if (!TryParseDay(day, out day))
+				return;
+			var dataFilePath = $"{Environment.CurrentDirectory}/Days/Day{day[..2]}/Day{day}.data";
+			if (!File.Exists(dataFilePath))
+			{
+
+			}
+			Process.Start("notepad.exe", dataFilePath);
 		}
 
-		private void CommandStartDay(string day, bool IsDebug) {
-			day = ParseDay(day);
+		private void CommandStartDay(string day, bool IsDebug)
+		{
+			if (!TryParseDay(day, out day))
+				return;
 			Thread.CurrentThread.IsBackground = true;
 			Type t = Type.GetType($"AdventOfCoding.Days.Day{day}");
-			if (t == null) {
+			if (t == null)
+			{
 				UIConsole.WriteLine($"Class 'AdventOfCoding.Days.Day{day}' not found!");
-			} else {
-				DayAbstract aufgabe = (DayAbstract) Activator.CreateInstance(t);
+			}
+			else
+			{
+				DayAbstract aufgabe = (DayAbstract)Activator.CreateInstance(t);
 				(string output, Stopwatch time) resultData = (null, null);
-				if (Debugger.IsAttached) {
+				if (Debugger.IsAttached)
+				{
 					resultData =
 							aufgabe.MainMethod(
 								new Reader($"{Environment.CurrentDirectory}/Days/Day{day[..2]}/Day{day}.data"),
 								IsDebug
 							);
 					this.results[day] = resultData.output;
-				} else {
-					try {
+				}
+				else
+				{
+					try
+					{
 						resultData =
 							aufgabe.MainMethod(
 								new Reader($"{Environment.CurrentDirectory}/Days/Day{day[..2]}/Day{day}.data"),
 								IsDebug
 							);
-					} catch (Exception exc) {
+					}
+					catch (Exception exc)
+					{
 						UIConsole.WriteLine(exc.StackTrace);
 					}
 				}
-				if (resultData == (null, null)) {
+				if (resultData == (null, null))
+				{
 					UIConsole.WriteLine("Not Implemented!");
-				} else {
+				}
+				else
+				{
 					this.results[day] = resultData.output;
 					UIConsole.WriteLine("Output: " + resultData.output);
-					UIConsole.WriteLine("Time elapsed: " + (long) (resultData.time.Elapsed.TotalMilliseconds * 1000) + "µs");
+					UIConsole.WriteLine("Time elapsed: " + (long)(resultData.time.Elapsed.TotalMilliseconds * 1000) + "µs");
 				}
 			}
 		}
 
-		private void CommandSubmitDay(string day) {
-			day = ParseDay(day);
+		private void CommandSubmitDay(string day)
+		{
+			if (!TryParseDay(day, out day))
+				return;
 			object result = null;
-			if (!this.results.TryGetValue(day, out result)) {
+			if (!this.results.TryGetValue(day, out result))
+			{
 				UIConsole.WriteLine($"Missing Result Day{day}");
 				return;
 			}
-			try {
+			try
+			{
 				ProcessStartInfo start = new ProcessStartInfo();
 				start.FileName = $"python.exe";
 				start.Arguments = string.Format(
@@ -177,48 +216,73 @@ namespace AdventOfCoding {
 				start.CreateNoWindow = true;
 				start.RedirectStandardOutput = true;
 				start.RedirectStandardError = true;
-				using (Process process = Process.Start(start)) {
-					using (StreamReader reader = process.StandardOutput) {
+				using (Process process = Process.Start(start))
+				{
+					using (StreamReader reader = process.StandardOutput)
+					{
 						string stderr = process.StandardError.ReadToEnd();
 						string output = reader.ReadToEnd();
-						if(!String.IsNullOrEmpty(stderr))
+						if (!String.IsNullOrEmpty(stderr))
 							UIConsole.WriteLine("Errors:\n" + stderr);
 						if (!String.IsNullOrEmpty(output))
 							UIConsole.WriteLine(output);
 					}
 				}
-			} catch(Exception e) {
+			}
+			catch (Exception e)
+			{
 				UIConsole.WriteLine(e.Message);
 			}
 		}
 
 
-		public void RunAOC(string day, bool isStrg, bool isShift, bool isAlt) {
-			day = ParseDay(day);
-			if (isStrg) {
-				UIConsole.WriteLine($"data Day{day}");
-				CommandOpenFile(day);
-			} else if (isAlt) {
-				UIConsole.WriteLine($"submit Day{day}");
-				CommandSubmitDay(day);
-			} else {
-				UIConsole.WriteLine($"start Day{day}{(isShift ? " -d " : "")}");
-				CommandStartDay(day, isShift);
+		public void RunAOC(string day, bool isStrg, bool isShift, bool isAlt)
+		{
+			if (TryParseDay(day, out var parsedDay))
+			{
+				if (isStrg)
+				{
+					UIConsole.WriteLine($"data Day{parsedDay}");
+					CommandOpenFile(parsedDay);
+				}
+				else if (isAlt)
+				{
+					UIConsole.WriteLine($"submit Day{parsedDay}");
+					CommandSubmitDay(parsedDay);
+				}
+				else
+				{
+					UIConsole.WriteLine($"start Day{parsedDay}{(isShift ? " -d " : "")}");
+					CommandStartDay(parsedDay, isShift);
+				}
+			}
+			else
+			{
+				UIConsole.WriteLine($"Invalid day '{day}'.");
 			}
 		}
 
-		private string ParseDay(string day) {
+		private bool TryParseDay(string day, out string parsedDay)
+		{
 			string suffix = "";
-			if (day.EndsWith("A")) {
-				suffix = day[day.Length - 1].ToString();
-				day = day[..(day.Length - 1)];
-			} else if (day.EndsWith("B")) {
+			if (day.EndsWith("A"))
+			{
 				suffix = day[day.Length - 1].ToString();
 				day = day[..(day.Length - 1)];
 			}
-			int day_num = int.Parse(day);
-			day = day_num.ToString("D2");
-			return day + suffix;
+			else if (day.EndsWith("B"))
+			{
+				suffix = day[day.Length - 1].ToString();
+				day = day[..(day.Length - 1)];
+			}
+			if (int.TryParse(day, out var day_num))
+			{
+				day = day_num.ToString("D2");
+				parsedDay = day + suffix;
+				return true;
+			}
+			parsedDay = null;
+			return false;
 		}
 	}
 }

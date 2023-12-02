@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace AdventOfCoding {
+﻿namespace AdventOfCoding {
 	public class UIConsoleState {
 		public static readonly string Idle = "Idle";
 		public static readonly string Waiting = "Waiting";

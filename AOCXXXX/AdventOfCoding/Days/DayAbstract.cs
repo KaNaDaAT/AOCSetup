@@ -10,7 +10,8 @@ namespace AdventOfCoding.Days {
 		private Stopwatch Stopwatch;
 		public bool IsDebugMode { get; private set; }
 
-		public (string output, Stopwatch sw) MainMethod(Reader reader, bool isDebugMode = false) {
+		public (string output, Stopwatch sw) MainMethod(Reader reader, bool isDebugMode = false)
+		{
 			this.IsDebugMode = isDebugMode;
 			reader.ReadAndGetLines();
 			Stopwatch = new Stopwatch();
@@ -21,7 +22,8 @@ namespace AdventOfCoding.Days {
 
 			PrintOutput();
 
-			if (Result == null) {
+			if (Result == null)
+			{
 				return (null, null);
 			}
 
@@ -30,14 +32,18 @@ namespace AdventOfCoding.Days {
 
 		protected abstract void Runner(Reader reader);
 
-		public void PrintOutput() {
-			if (ToPrint.Length > 0 && IsDebugMode) {
+		public void PrintOutput()
+		{
+			if (ToPrint.Length > 0 && IsDebugMode)
+			{
 				UIConsole.WriteLine(ToPrint.ToString());
 			}
 		}
 
-		public bool IfDebugStopTimer() {
-			if (IsDebugMode) {
+		public bool IfDebugStopTimer()
+		{
+			if (IsDebugMode)
+			{
 				Stopwatch.Stop();
 			}
 			return IsDebugMode;
