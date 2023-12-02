@@ -107,6 +107,7 @@ namespace AdventOfCoding {
 		public static void WriteCommand(string command)
 		{
 			Instance.AddCommandToHistory(command);
+			WriteLine(command);
 		}
 
 		public static void WriteError(Exception exception)
