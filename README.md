@@ -46,7 +46,7 @@ It will create the C# Project, fetch the data already available and setup a mini
 
 The user interface for AOCSetup provides a convenient way to interact with your Advent of Code (AoC) solutions. Whether you prefer button clicks or command-line interactions, the interface supports both methods. The buttons in the user interface are designed to execute various commands, streamlining the process of running, debugging, submitting, and managing your AoC solutions.
 
-## Commands
+### Commands
 
 You can use command-line interactions. The available commands include:
 
@@ -60,7 +60,7 @@ You can use command-line interactions. The available commands include:
 > 
 > `Day` can be ommitet
 
-#### Buttons
+### Buttons
 
 - Clicking a button will execute the corresponding `start` command.
 - Holding **SHIFT** while clicking will run the command with **debug** output.
@@ -69,7 +69,7 @@ You can use command-line interactions. The available commands include:
 > [!NOTE]
 > Each button click will check if data needs to be fetched before executing the command.
 
-### Contributions
+## Contributions
 
 Contributions to AOCSetup are welcome! If you have ideas for improvements or want to add support for additional features, feel free to open issues or pull requests.
 
