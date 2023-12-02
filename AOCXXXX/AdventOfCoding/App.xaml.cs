@@ -12,18 +12,12 @@ namespace AdventOfCoding {
 		{
 			Dispatcher.UnhandledException += Dispatcher_UnhandledException;
 			TaskScheduler.UnobservedTaskException += TaskScheduler_UnobservedTaskException;
-			Application.Current.DispatcherUnhandledException += Current_DispatcherUnhandledException;
-		}
-
-		private void Current_DispatcherUnhandledException(object sender, System.Windows.Threading.DispatcherUnhandledExceptionEventArgs e)
-		{
-			UIConsole.WriteLine(e.Exception);
-			e.Handled = true;
 		}
 
 		private static void Dispatcher_UnhandledException(object sender, System.Windows.Threading.DispatcherUnhandledExceptionEventArgs e)
 		{
 			UIConsole.WriteLine(e.Exception);
+			e.Handled = true;
 		}
 
 		private void TaskScheduler_UnobservedTaskException(object sender, UnobservedTaskExceptionEventArgs e)

@@ -33,15 +33,19 @@ namespace AdventOfCoding {
 
 			UndefinedCommand commandOpen = new UndefinedCommand();
 			commandOpen.Define("open", new Action<string>(CommandOpenFile)); // TODO Besser im Define mitgeben wie viele parameter. x für unendlich
-			UIConsole.Instance.commands.Add("open", commandOpen);
+			UIConsole.Instance.Commands.Add("open", commandOpen);
 
 			UndefinedCommand commandStart = new UndefinedCommand();
 			commandStart.Define("start b-d", new Action<string, bool>(CommandStartDay)); // TODO Besser im Define mitgeben wie viele parameter. x für unendlich
-			UIConsole.Instance.commands.Add("start", commandStart);
+			UIConsole.Instance.Commands.Add("start", commandStart);
+
+			UndefinedCommand commandFetch = new UndefinedCommand();
+			commandFetch.Define("fetch", new Action<string>(CommandFetchDay)); // TODO Besser im Define mitgeben wie viele parameter. x für unendlich
+			UIConsole.Instance.Commands.Add("fetch", commandFetch);
 
 			UndefinedCommand commandSubmit = new UndefinedCommand();
 			commandSubmit.Define("submit", new Action<string>(CommandSubmitDay)); // TODO Besser im Define mitgeben wie viele parameter. x für unendlich
-			UIConsole.Instance.commands.Add("submit", commandSubmit);
+			UIConsole.Instance.Commands.Add("submit", commandSubmit);
 		}
 
 		private void CreateAdventButtons()
@@ -133,10 +137,6 @@ namespace AdventOfCoding {
 			if (!TryParseDay(day, out day))
 				return;
 			var dataFilePath = $"{Environment.CurrentDirectory}/Days/Day{day[..2]}/Day{day}.data";
-			if (!File.Exists(dataFilePath))
-			{
-
-			}
 			Process.Start("notepad.exe", dataFilePath);
 		}
 
@@ -191,12 +191,48 @@ namespace AdventOfCoding {
 			}
 		}
 
+		private void CommandFetchDay(string day)
+		{
+			if (!TryParseDay(day, out var parsedDay))
+				return;
+			try
+			{
+				ProcessStartInfo start = new ProcessStartInfo();
+				start.FileName = $"python.exe";
+				start.Arguments = string.Format(
+						"{0} {1}",
+						$"{AppDomain.CurrentDomain.BaseDirectory}data.py",
+						parsedDay[..2]
+					);
+				start.UseShellExecute = false;
+				start.CreateNoWindow = true;
+				start.RedirectStandardOutput = true;
+				start.RedirectStandardError = true;
+				using (Process process = Process.Start(start))
+				{
+					using (StreamReader reader = process.StandardOutput)
+					{
+						string stderr = process.StandardError.ReadToEnd();
+						string output = reader.ReadToEnd();
+						if (!String.IsNullOrEmpty(stderr))
+							UIConsole.WriteLine("Errors:\n" + stderr);
+						if (!String.IsNullOrEmpty(output))
+							UIConsole.WriteLine(output);
+					}
+				}
+			}
+			catch (Exception e)
+			{
+				UIConsole.WriteLine(e.Message);
+			}
+		}
+
 		private void CommandSubmitDay(string day)
 		{
 			if (!TryParseDay(day, out day))
 				return;
 			object result = null;
-			if (!this.results.TryGetValue(day, out result))
+			if (!this.results.TryGetValue(day, out result) || result == null)
 			{
 				UIConsole.WriteLine($"Missing Result Day{day}");
 				return;
@@ -240,19 +276,33 @@ namespace AdventOfCoding {
 		{
 			if (TryParseDay(day, out var parsedDay))
 			{
+				// ToDo: Methods and Settings for the path
+				var dataFilePath = $"{Environment.CurrentDirectory}/Days/Day{day[..2]}/Day{day}.data";
+				if (!File.Exists(dataFilePath))
+				{
+					UIConsole.WriteLine($"fetch Day{parsedDay}");
+					CommandFetchDay(parsedDay);
+#if DEBUG
+					string startupPath = Directory.GetParent(System.IO.Directory.GetCurrentDirectory()).Parent.Parent.FullName;
+					string startupDataFilePathA = Path.Combine(startupPath, $"Days/Day{day[..2]}/Day{day[..2]}A.data");
+					string startupDataFilePathB = Path.Combine(startupPath, $"Days/Day{day[..2]}/Day{day[..2]}B.data");
+					File.Copy(dataFilePath, startupDataFilePathA);
+					File.Copy(dataFilePath, startupDataFilePathB);
+#endif
+				}
 				if (isStrg)
 				{
-					UIConsole.WriteLine($"data Day{parsedDay}");
+					UIConsole.WriteCommand($"data Day{parsedDay}");
 					CommandOpenFile(parsedDay);
 				}
 				else if (isAlt)
 				{
-					UIConsole.WriteLine($"submit Day{parsedDay}");
+					UIConsole.WriteCommand($"submit Day{parsedDay}");
 					CommandSubmitDay(parsedDay);
 				}
 				else
 				{
-					UIConsole.WriteLine($"start Day{parsedDay}{(isShift ? " -d " : "")}");
+					UIConsole.WriteCommand($"start Day{parsedDay}{(isShift ? " -d true" : "")}");
 					CommandStartDay(parsedDay, isShift);
 				}
 			}
@@ -265,6 +315,7 @@ namespace AdventOfCoding {
 		private bool TryParseDay(string day, out string parsedDay)
 		{
 			string suffix = "";
+			day = day.ToUpper().Replace("DAY", "");
 			if (day.EndsWith("A"))
 			{
 				suffix = day[day.Length - 1].ToString();
